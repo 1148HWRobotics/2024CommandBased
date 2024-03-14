@@ -48,12 +48,6 @@ public class PIDController implements MotionController {
         return solve(currentError, 1);
     }
 
-    Double deadZone = null;
-
-    public void setDeadZone(double size) {
-        deadZone = size;
-    }
-
     /**
      * Solves the control problem for a given error and delta time.
      *
@@ -82,9 +76,6 @@ public class PIDController implements MotionController {
         if (constant.max != null && Math.abs(correction) > Math.abs(constant.max)) {
             return Math.abs(constant.max) * Math.signum(correction);
         }
-
-        if (deadZone != null && Math.abs(correction) < deadZone)
-                return 0;
 
         // Return the total correction.
         return correction;

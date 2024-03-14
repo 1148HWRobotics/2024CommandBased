@@ -1,4 +1,4 @@
-package frc.robot.Auto.Positioning;
+package frc.robot.Auto;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.Util.Vector2;

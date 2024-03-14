@@ -15,8 +15,6 @@ public class Shooter extends SubsystemBase {
 
     boolean isSpinning = false;
 
-    DeSpam dSpam = new DeSpam(0.5);
-
     public Shooter(AnyMotor left, AnyMotor right) {
 
         this.left = left;
@@ -60,10 +58,6 @@ public class Shooter extends SubsystemBase {
         // this.vel = vel;
 
         if (isSpinning) {
-            dSpam.exec(() -> {
-                System.out.println("tvel: " + vel + " vel: " + right.getVelocity());
-            });
-
             right.setVelocity(vel);
             left.setVoltage(right.getVoltage());
         } else {

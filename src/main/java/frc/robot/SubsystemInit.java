@@ -1,20 +1,9 @@
 package frc.robot;
 
-import java.util.Optional;
-
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.ReplanningConfig;
-
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-import frc.robot.Auto.Positioning.FieldPositioning;
-import frc.robot.Auto.Positioning.Position;
-import frc.robot.Auto.Positioning.ResettablePosition;
+import frc.robot.Auto.FieldPositioning;
+import frc.robot.Auto.Position;
 import frc.robot.Components.Carriage;
 import frc.robot.Components.Climb;
 import frc.robot.Components.Elevator;
@@ -121,14 +110,14 @@ public class SubsystemInit {
 
     static Elevator elevator() {
         BinarySensor elevatorDownSensor = new BinarySensor(0);
-        Falcon f1 = new Falcon(9, false).withMaxVoltage(6);
+        Falcon f1 = new Falcon(9, false).withMaxVoltage(11);
         f1.setCurrentLimit(100);
-        Falcon f2 = new Falcon(13, true).withMaxVoltage(6);
+        Falcon f2 = new Falcon(13, true).withMaxVoltage(11);
         f2.setCurrentLimit(100);
         var elevator = new Elevator(
                 f1, // left
                 f2, // right
-                new PIDController(new PIDConstant(0.1, 0, 0.000)),
+                new PIDController(new PIDConstant(0.1, 0.0, 0.0)),
                 elevatorDownSensor);
         return elevator;
     }
@@ -164,45 +153,5 @@ public class SubsystemInit {
     static Joystick joystick() {
         Joystick joystick = new Joystick(1);
         return joystick;
-    }
-
-    static void initializeAutoBuilder(PositionedDrive drive, FieldPositioning fieldPositioning) {
-        var resettablePos = new ResettablePosition(fieldPositioning);
-        AutoBuilder.configureHolonomic(
-                () -> resettablePos.getPosition(), // Robot pose supplier
-                (pos) -> resettablePos.reset(pos), // Method to reset odometry (will be
-                // called if your auto has a
-                // starting
-                // pose)
-                () -> fieldPositioning.getRobotRelativeSpeeds(), // ChassisSpeeds supplier.
-                // MUST BE ROBOT RELATIVE
-                (speeds) -> drive.fromChassisSpeeds(speeds), // Method that will drive the
-                // robot given ROBOT RELATIVE
-                // ChassisSpeeds
-                new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should
-                        // likely live in your
-                        // Constants class
-                        new PIDConstants(0.1, 0.0, 0.0), // Translation PID constants
-                        new PIDConstants(0.1, 0.0, 0.0), // Rotation PID constants
-                        4.5, // Max module speed, in m/s
-                        0.4, // Drive base radius in meters. Distance from robot center to furthest
-                        // module.
-                        new ReplanningConfig(false, false) // Default path replanning config. See the API for the
-                // options here
-                ),
-                () -> {
-                    // Boolean supplier that controls when the path will be mirrored for the red
-                    // alliance
-                    // This will flip the path being followed to the red side of the field.
-                    // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-                    Optional<Alliance> alliance = DriverStation.getAlliance();
-                    if (alliance.isPresent()) {
-                        return alliance.get() == DriverStation.Alliance.Red;
-                    }
-                    return false;
-                },
-                drive // Reference to this subsystem to set requirements
-        );
     }
 }

@@ -17,7 +17,7 @@ public class SimplePromise extends Promise {
     }
 
     // Adds a callback to be executed when the promise is resolved.
-    public void then(Lambda callback) {
+    public void i_then(Lambda callback) {
         if (resolved) {
             callback.run();
         } else {

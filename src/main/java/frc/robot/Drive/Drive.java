@@ -71,8 +71,8 @@ public class Drive extends SubsystemBase {
     public void fromChassisSpeeds(ChassisSpeeds speeds) {
         var translationVel = new Vector2(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
         var rotationVel = speeds.omegaRadiansPerSecond / Math.PI * 180;
-        System.out.println(translationVel.getMagnitude()/24.70);
-        power(translationVel.getMagnitude()/24.70, translationVel.getAngleDeg(), rotationVel, false);
+        System.out.println(translationVel.getMagnitude());
+        power(translationVel.getMagnitude(), translationVel.getAngleDeg(), rotationVel, false);
     }
 
     /**
@@ -81,16 +81,24 @@ public class Drive extends SubsystemBase {
      * 
      * @param goSpeed             Directional speed in in/sec.
      * @param goDirectionDeg      Angle to translate towards in degrees
-     * @param turnVelocity        deg/sec
+     * @param turnVoltage        deg/sec
      * @param errorOnLargeVoltage If true, throws an error when voltage exceeds 12V.
      */
-    public void power(double goSpeed, double goDirectionDeg, double turnVelocity) {
+    public void power(double goSpeed, double goDirectionDeg, double turnVoltage, boolean errorOnLargeVoltage) {
         if (RobotContainer.isDriveDisabled)
             stopGoPower();
 
+        // Validation check for voltage limits.
+        if (errorOnLargeVoltage) {
+            if (Math.abs(goSpeed) > 12)
+                throw new Error("Illegally large voltage - goVoltage");
+            if (Math.abs(turnVoltage) > 12)
+                throw new Error("Illegally large voltage - turnVoltage");
+        }
+
         // converts angular velocity of the robot into a per module linear velocity
         // (in/sec)
-        turnVelocity = turnVelocity / 180.0 * Math.PI
+        turnVoltage = turnVoltage / 180.0 * Math.PI
                 * Math.sqrt(Math.pow(widthInches / 2, 2) + Math.pow(lengthInches / 2, 2));
 
         // Normalize the go direction angle.
@@ -103,7 +111,7 @@ public class Drive extends SubsystemBase {
         // Calculate target vectors for each module based on driving and turning
         // directions.
         for (int quadrant = 1; quadrant <= 4; quadrant++) {
-            var turnVec = getTurnVec(quadrant).multiply(turnVelocity);
+            var turnVec = getTurnVec(quadrant).multiply(turnVoltage);
             var goVec = Vector2.fromAngleAndMag(goDirectionDeg, goSpeed);
             var vec = goVec.add(turnVec);
 
@@ -123,6 +131,11 @@ public class Drive extends SubsystemBase {
                 moduleTargets[module] = tar.withMagnitude(tar.getMagnitude() * fac);
             }
         }
+    }
+
+    // Overloaded method for power without the errorOnLargeVoltage flag.
+    public void power(double goVoltage, double goDirectionDeg, double turnVoltage) {
+        this.power(goVoltage, goDirectionDeg, turnVoltage, true);
     }
 
     // Sets the same PD constants for all swerve modules.
@@ -193,7 +206,7 @@ public class Drive extends SubsystemBase {
             if (moduleTargets != null) {
                 var vec = moduleTargets[quadrant - 1];
                 if (error / total < 1 - alignmentThreshold) {
-                    module.setVelocity(vec.getMagnitude());
+                    module.setGoVoltage(vec.getMagnitude());
                 } else {
                     module.setGoVoltage(0);
                 }

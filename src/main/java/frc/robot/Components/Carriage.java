@@ -53,7 +53,7 @@ public class Carriage extends SubsystemBase {
         }
 
         if (startPos != null) {
-            motor.setVoltage(controller.solve(-(motor.getRevs() - (prepShot ? startPos + 3.5 : startPos)), 0.02));
+            motor.setVoltage(controller.solve(-(motor.getRevs() - (prepShot ? startPos + 4 : startPos + 1.5)), 0.02));
         }
     }
 }

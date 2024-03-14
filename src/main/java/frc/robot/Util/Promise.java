@@ -6,7 +6,12 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public abstract class Promise {
     public abstract boolean isResolved();
 
-    public abstract void then(Lambda callback);
+    protected abstract void i_then(Lambda callback);
+
+    public Promise then(Lambda callback) {
+        i_then(callback);
+        return Promise.immediate();
+    }
 
     public Promise then(Getter<Promise> promiseGetter) {
         if (isResolved()) {
@@ -14,9 +19,9 @@ public abstract class Promise {
         } else {
             SimplePromise returnPromise = new SimplePromise();
 
-            then(() -> {
+            i_then(() -> {
                 Promise promise = promiseGetter.get();
-                promise.then(() -> {
+                promise.i_then(() -> {
                     returnPromise.resolve();
                 });
             });
@@ -39,7 +44,7 @@ public abstract class Promise {
         var resolved = new Container<Integer>(0);
         var all = new SimplePromise();
         for (var prom : proms) {
-            prom.then(() -> {
+            prom.i_then(() -> {
                 resolved.val++;
                 if (resolved.val == proms.length)
                     all.resolve();

@@ -42,12 +42,8 @@ public class Falcon extends AnyMotor {
         falcon.setNeutralMode(enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast);
     }
 
-    Double lastVel = null;
     protected double uGetVelocity() {
-        if (!falcon.getVelocity().hasUpdated())
-            return lastVel;
-        lastVel = falcon.getVelocity().getValue();
-        return lastVel;
+        return falcon.getVelocity().getValue();
     }
 
     public Falcon withMaxVoltage(double voltage) {

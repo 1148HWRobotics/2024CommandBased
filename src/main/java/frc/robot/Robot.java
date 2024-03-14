@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Devices.Motor.Falcon;
@@ -19,6 +20,8 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     m_robotContainer = new RobotContainer();
     m_teleopCommand = m_robotContainer.getTeleopCommand();
+    SmartDashboard.putStringArray("Auto List", new String[]{"red", "blue", "commit arson"});
+    
   }
   
   @Override
@@ -40,8 +43,7 @@ public class Robot extends TimedRobot {
     if (m_teleopCommand != null) {
       m_teleopCommand.cancel();
     }
-
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand(SmartDashboard.getString("Auto Selector", "Red"));
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();

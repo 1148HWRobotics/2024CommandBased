@@ -1,4 +1,4 @@
-package frc.robot.Auto.Positioning;
+package frc.robot.Auto;
 
 import java.util.LinkedList;
 

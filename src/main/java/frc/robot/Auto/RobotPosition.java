@@ -1,4 +1,4 @@
-package frc.robot.Auto.Drive;
+package frc.robot.Auto;
 
 // Import the Vector2 class, which represents a mathematical 2D vector, likely used here to represent a position in 2D space.
 import frc.robot.Util.Vector2;

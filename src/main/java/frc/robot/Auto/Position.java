@@ -1,4 +1,4 @@
-package frc.robot.Auto.Positioning;
+package frc.robot.Auto;
 
 import frc.robot.Util.AngleMath;
 // Importing the Vector2 class, which represents a 2-dimensional vector for position.

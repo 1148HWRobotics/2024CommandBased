@@ -4,12 +4,14 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Auto.Positioning.FieldPositioning;
-import frc.robot.Auto.Positioning.Position;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Auto.AutoDrive;
+import frc.robot.Auto.FieldPositioning;
+import frc.robot.Auto.Position;
 import frc.robot.Components.Carriage;
 import frc.robot.Components.Climb;
 import frc.robot.Components.Elevator;
@@ -44,7 +46,7 @@ public class RobotContainer {
   LimeLight intakeLimeLight = SubsystemInit.intakeLimelight();
   Imu imu = SubsystemInit.imu();
   Shooter shooter = SubsystemInit.shooter();
-  Climb climb = SubsystemInit.climb();
+  // Climb climb = SubsystemInit.climb();
   Elevator elevator = SubsystemInit.elevator();
   Falcon intake = SubsystemInit.intake();
   BinarySensor intakeSensor = SubsystemInit.intakeSensor();
@@ -59,11 +61,10 @@ public class RobotContainer {
   }
 
   public RobotContainer() {
-    SubsystemInit.initializeAutoBuilder(drive, fieldPositioning);
   }
 
   Lambda teleop() {
-    PIDController turnPD = new PIDController(new PDConstant(0.4, 0.05));
+    PIDController turnPD = new PIDController(new PDConstant(0.8, 0.0));
     PIDController targetingPID = new PIDController(new PIDConstant(1, 0, 0));
 
     final Container<Boolean> isAutoAimOn = new Container<>(true);
@@ -76,6 +77,18 @@ public class RobotContainer {
 
       if (!intakeSensor.get()) {
         inIntake.val = true;
+      }
+
+      SmartDashboard.putNumber("Gyro", fieldPositioning.getTurnAngle());
+      if (inCarriage.val) {
+        SmartDashboard.putString("DB/String 0", "Its inside of me");
+      } else {
+        SmartDashboard.putString("DB/String 0", "Out Daddy");
+      }
+      if (shooter.isSpinning()) {
+        SmartDashboard.putString("DB/String 1", "Shooter Is Spinning");
+      } else {
+        SmartDashboard.putString("DB/String 1", "Shooter Not Spinning");
       }
 
       if (intakeSensor.get() && inIntake.val) {
@@ -93,7 +106,7 @@ public class RobotContainer {
         // outtake
         inCarriage.val = false;
         carriage.outTake();
-        intake.setVoltage(-6);
+        intake.setVoltage(-12);
       } else if (!elevator.isDown() && con.getR1Button()) {
         // outtake but into amp
         carriage.outTake();
@@ -139,16 +152,17 @@ public class RobotContainer {
         }
       }
 
-      dSpam.exec(() -> {
-        System.out.println(fieldPositioning.getPosition() + " " + fieldPositioning.getTurnAngle());
-      });
+      // dSpam.exec(() -> {
+      // System.out.println(fieldPositioning.getPosition() + " " +
+      // fieldPositioning.getTurnAngle());
+      // });
 
-      // climber, can be accessed by joystick or controller
-      if (joystick.getRawButtonPressed(2) || con.getTriangleButtonPressed())
-        if (climb.isDown())
-          climb.moveUp();
-        else
-          climb.moveDown();
+      // Todo: climber, can be accessed by joystick or controller
+      // if (joystick.getRawButtonPressed(2) || con.getTriangleButtonPressed())
+      // if (climb.isDown())
+      // climb.moveUp();
+      // else
+      // climb.moveDown();
 
       // elevator
       if (con.getL1ButtonPressed())
@@ -157,15 +171,17 @@ public class RobotContainer {
         else
           elevator.moveDown();
 
+      if (con.getSquareButton())
+        elevator.climbDown();
+
       var targetPos = speakerPosition();
       // .add(fieldPositioning.getFieldRelativeSpeed().multiply(0.4));
 
       final var displacementFromTar = targetPos
           .minus(fieldPositioning.getPosition());
-        isShooting.val = false;
-      
+      isShooting.val = false;
 
-      var distToTar = displacementFromTar.getMagnitude();
+      // var distToTar = displacementFromTar.getMagnitude();
 
       var correction = -turnPD.solve(AngleMath.getDelta(displacementFromTar.getTurnAngleDeg() - 90,
           fieldPositioning.getTurnAngle()));
@@ -189,28 +205,26 @@ public class RobotContainer {
         // carriage.setVoltage(12);
 
         // if (con.getR1ButtonPressed() && !isShooting.val) {
-        //   System.out.println("gonna shootingS");
-        //   isShooting.val = true;
-        //   shooter.spin();
+        // System.out.println("gonna shootingS");
+        // isShooting.val = true;
+        // shooter.spin();
 
-        //   carriage.setVoltage(8);
-        //   Time.timeout(() -> {
-        //     System.out.println("shootingS");
-        //     carriage.setVoltage(0);
-        //     isShooting.val = false;
-        //     inCarriage.val = false;
-        //   }, 2);
+        // carriage.setVoltage(8);
+        // Time.timeout(() -> {
+        // System.out.println("shootingS");
+        // carriage.setVoltage(0);
+        // isShooting.val = false;
+        // inCarriage.val = false;
+        // }, 2);
         // }
       }
 
       if ((con.getLeftStick().getMagnitude() + Math.abs(con.getRightX()) > 0.1) || pointingTar)
-        drive.power(ScaleInput.curve(con.getLeftStick().getMagnitude(), 1.5) * 12.0, // voltage
+        drive.power(ScaleInput.curve(con.getLeftStick().getMagnitude(), 1.5) * 11.99, // voltage
             (con.getLeftStick().getAngleDeg()) - fieldPositioning.getTurnAngle()
                 + ((SubsystemInit.isRed()) ? 0 : 180), // go angle
-            (!pointingTar) ? con.getRightX() * -12.0 : correction, // change back to
-                                                                   // correction
-            // turn voltage
-            // 0,
+            (!pointingTar) ? con.getRightX() * -11.99
+                : correction,
             false);
       else
         drive.power(0, 0, 0);
@@ -232,13 +246,120 @@ public class RobotContainer {
     };
   }
 
-  public Command getAutonomousCommand() {
-    var auto = new PathPlannerAuto("New Auto");
-    // fieldPositioning.setStartPosition(new
-    // Position(auto.getStaringPoseFromAutoFile("New
-    // Auto").getRotation().getDegrees(), new
-    // Vector2(auto.getStaringPoseFromAutoFile("New Auto").getX(),
-    // auto.getStaringPoseFromAutoFile("New Auto").getY())));
-    return auto;
+  void startAuto() {
+
+    AutoDrive robor = new AutoDrive(fieldPositioning,
+        new Position(90, fieldPositioning.getPosition().add(new Vector2(0, 0))), drive,
+        new PDConstant(0.3, 0, 2.0),
+        new PDConstant(0.4, 0, 2.0));
+    CommandScheduler.getInstance().schedule(new Command() {
+      @Override
+      public void execute() {
+
+        dSpam.exec(() -> {
+          System.out
+              .println(
+                  fieldPositioning.getPosition() + "correct " + robor.displacement + " "
+                      + fieldPositioning.getTurnAngle());
+        });
+      }
+    });
+
+    shooter.toggleSpinning();
+
+    Promise.immediate()
+        .then(() -> {
+          robor.setAngleTar(180);
+          return robor.moveTo(new Vector2(235, 90));
+        })
+        .then(() -> Promise.timeout(2))
+        .then(() -> carriage.shoot());
+        // .then(() -> Promise.timeout(1))
+        // .then(() -> {
+        //   intake.setVoltage(6);
+        //   var notePos = new Vector2(235, 53);
+        //   robor.pointTo(notePos);
+        //   return robor.moveTo(notePos);
+        // });
+  }
+
+  public Command getAutonomousCommand(String autonToRun) {
+    return new Command() {
+      @Override
+      public void initialize() {
+        drive.setAlignmentThreshold(0.2);
+        drive.power(2, 90, 1);
+      }
+
+      @Override
+      public void execute() {
+        if (fieldPositioning.hasGottenLimeLightFrame()) {
+          startAuto();
+          cancel();
+        }
+      }
+    };
+
+    // switch (autonToRun) {
+    // case "red": {
+    // }
+    // case "blue": {
+    // return new Command() {
+    // @Override
+    // public void initialize() {
+    // drive.setAlignmentThreshold(0.2);
+    // drive.power(2, 90, 2);
+    // }
+
+    // @Override
+    // public void execute() {
+    // if (fieldPositioning.hasGottenLimeLightFrame()) {
+    // startAuto();
+    // cancel();
+    // }
+    // }
+    // };
+    // }
+    // case "commit arson": {
+    // return new Command() {
+    // @Override
+    // public void initialize() {
+    // drive.setAlignmentThreshold(0.2);
+    // drive.power(0, 0, 12);
+    // }
+
+    // @Override
+    // public void execute() {
+    // shooter.toggleSpinning();
+    // Time.timeout(() -> {
+
+    // }, 3);
+    // carriage.shoot();
+    // Time.timeout(() -> {
+    // }, 1);
+
+    // }
+    // };
+    // }
+    // default: {
+    // return new Command() {
+    // @Override
+    // public void initialize() {
+    // drive.setAlignmentThreshold(0.2);
+    // drive.power(2, 90, 2);
+    // }
+
+    // @Override
+    // public void execute() {
+    // if (fieldPositioning.hasGottenLimeLightFrame()) {
+    // startAuto();
+    // cancel();
+    // }
+    // }
+    // };
+    // }
+
+    // }
+
   }
 }
