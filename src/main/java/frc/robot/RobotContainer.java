@@ -79,8 +79,8 @@ public class RobotContainer {
 
         var pointingTar = shooter.isSpinning() && elevator.isDown() && isAutoAimOn.val;
 
-        boolean canAutoShoot = MathPlus.withinBounds(displacementFromTar.getMagnitude(), 105.0, 95.0)
-            && correction < 0.38;
+        boolean canAutoShoot = MathPlus.withinBounds(displacementFromTar.getMagnitude(), 107.0, 98.0)
+            && correction < 0.2;
 
         if (elevator.isDown() && shooter.isAtVelocity() && (canAutoShoot || con.getR1Button())) {
           isShooting = true;
@@ -91,13 +91,15 @@ public class RobotContainer {
           drive.power(
               // we get the magnitude of the left stick and apply a concave up curve to it
               // this becomes the magnitude of the translational voltage on each module
-              ScaleInput.curve(con.getLeftStick().getMagnitude(), 1.5) * 11.99, // voltage
-              //
+              ScaleInput.curve(con.getLeftStick().getMagnitude(), 1.5) * 11.99, // go voltage
+              // We determine our robot's driver relative position
+              // then we rotate our translation to be driver relative
               (con.getLeftStick().getAngleDeg()) - fieldPositioning.getTurnAngle()
                   + ((SubsystemInit.isRed()) ? 180 : 0), // go angle
-              // by default, we multiply our
+              // by default, our turn voltage is just our right stick x
+              // unless we are auto aiming
               (!pointingTar) ? con.getRightX() * -11.99
-                  : correction,
+                  : correction, // turn voltage
               false);
         else
           drive.power(0, 0, 0);

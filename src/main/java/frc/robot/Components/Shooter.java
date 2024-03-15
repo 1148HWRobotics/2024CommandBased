@@ -39,7 +39,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean isAtVelocity() {
-        return MathPlus.withinBounds(left.getVelocity(), vel + 16, vel - 8);
+        return MathPlus.withinBounds(left.getVelocity(), vel + 6, vel - 6);
     }
 
     public double vel = 85;
