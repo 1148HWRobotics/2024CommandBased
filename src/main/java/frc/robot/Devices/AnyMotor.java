@@ -94,7 +94,11 @@ public abstract class AnyMotor extends SubsystemBase {
      * Resets the motor encoder to zero.
      */
     public void resetEncoder() {
-        resetPos = uGetRevs();
+        setEncoder(0);
+    }
+
+    public void setEncoder(double val) {
+        resetPos = uGetRevs() - val;
     }
 
     /**

@@ -118,7 +118,7 @@ public class Elevator extends SubsystemBase {
     public void periodic() {
         if (target != null) {
             target = Math.max(Math.min(target, upHeight), downHeight);
-            var goingDown = target == 0;
+            var goingDown = target <= 0;
             final var height = getHeight() + 0;
 
             var slowFac = 20;
@@ -133,7 +133,7 @@ public class Elevator extends SubsystemBase {
             if (!zero.get() && goingDown) {
                 left.resetEncoder();
                 left.setVoltage(0);
-                left.setVoltage(0);
+                right.setVoltage(0);
             } else {
                 left.setVelocity(vel);
                 right.setVelocity(vel);
