@@ -1,7 +1,5 @@
 package frc.robot.Drive;
 
-import org.ejml.ops.QuickSort_S32;
-
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
@@ -81,7 +79,7 @@ public class Drive extends SubsystemBase {
      * 
      * @param goSpeed             Directional speed in in/sec.
      * @param goDirectionDeg      Angle to translate towards in degrees
-     * @param turnVoltage        deg/sec
+     * @param turnVoltage         deg/sec
      * @param errorOnLargeVoltage If true, throws an error when voltage exceeds 12V.
      */
     public void power(double goSpeed, double goDirectionDeg, double turnVoltage, boolean errorOnLargeVoltage) {
@@ -185,7 +183,7 @@ public class Drive extends SubsystemBase {
             stopGoPower();
 
         final double dTime = 0.02;
-        
+
         double error = 0;
         double total = 0;
         if (moduleTargets != null) {

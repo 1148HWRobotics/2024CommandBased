@@ -2,10 +2,7 @@ package frc.robot.Components;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Devices.AnyMotor;
-import frc.robot.Util.DeSpam;
 import frc.robot.Util.MathPlus;
-import frc.robot.Util.PIDConstant;
-import frc.robot.Util.PIDController;
 import frc.robot.Util.PWIDConstant;
 import frc.robot.Util.PWIDController;
 
@@ -20,7 +17,7 @@ public class Shooter extends SubsystemBase {
         this.left = left;
         this.right = right;
 
-        var con = new PWIDController(new PWIDConstant(0.1, 0, 0.01, 3));
+        var con = new PWIDController(new PWIDConstant(0.1, 0.0, 0.005, 5));
         left.setVelocityPD(con);
         right.setVelocityPD(con);
     }

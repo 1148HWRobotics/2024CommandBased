@@ -16,6 +16,8 @@ public class Elevator extends SubsystemBase {
         this.left = left;
         this.right = right;
         this.zero = zero;
+        left.setBrakeMode(true);
+        right.setBrakeMode(true);
 
         left.resetEncoder();
 
@@ -25,8 +27,8 @@ public class Elevator extends SubsystemBase {
         left.setVelocityPD(constant.clone());
         right.setVelocityPD(constant.clone());
 
-        left.setCurrentLimit(30);
-        right.setCurrentLimit(30);
+        left.setCurrentLimit(40);
+        right.setCurrentLimit(40);
     }
 
     public boolean isDown() {
@@ -47,9 +49,20 @@ public class Elevator extends SubsystemBase {
 
     final double upHeight = 360.0 * 23.1;
     final double downHeight = -360 * 0.1;
+    final double climbHeight = 360 * 17.1;
 
     public void moveUp() {
         target = upHeight;
+    }
+
+    public void moveToClimb() {
+        target = climbHeight;
+    }
+
+    public void moveRaw(double input) {
+        if (target == null)
+            return;
+        target = MathPlus.clampVal(target + input, downHeight, upHeight);
     }
 
     public void moveDown() {
@@ -58,9 +71,46 @@ public class Elevator extends SubsystemBase {
 
     public void climbDown() {
         target = null;
-        left.setVelocity(-48);
-        right.setVelocity(-48);
+        left.setVoltage(-12);
+        right.setVoltage(-12);
     }
+
+    public void stretch() {
+        target = null;
+        left.setVoltage(1);
+        right.setVoltage(1);
+    }
+
+    public void manualControl(boolean goDown, boolean JoystickMoving) {
+        // target = null;
+        double vel = 1.8;
+        int direction = goDown ? -1 : 1;
+        direction = direction * 360;
+        if (getHeight() < upHeight && getHeight() > downHeight && JoystickMoving) {
+            target = null;
+            left.setVelocity(vel);
+            right.setVelocity(vel);
+            System.out.println("moving");
+        } else if (getHeight() > upHeight) {
+            moveUp();
+        } else if (getHeight() < downHeight) {
+            moveDown();
+        } else if (target != upHeight && target != downHeight) {
+            target = getHeight();
+        }
+        // if ((getHeight() > upHeight && !goDown) || (getHeight() < downHeight &&
+        // goDown)) {
+        // pause();
+        // } else {
+        // left.setVelocity(direction * 3);
+        // right.setVelocity(direction * 3);
+        // }
+    }
+
+    // public void pause() {
+    // left.setVelocity(0);
+    // right.setVelocity(0);
+    // }
 
     DeSpam dSpam = new DeSpam(0.5);
 
@@ -77,11 +127,13 @@ public class Elevator extends SubsystemBase {
                 max *= 1.6;
             var vel = MathPlus.clampAbsVal(target - height, max) / slowFac;
             dSpam.exec(() -> {
-                System.out.println("target " + target + "curr: " + height + " vel: " + vel);
+                System.out.println(vel);
             });
 
             if (!zero.get() && goingDown) {
                 left.resetEncoder();
+                left.setVoltage(0);
+                left.setVoltage(0);
             } else {
                 left.setVelocity(vel);
                 right.setVelocity(vel);

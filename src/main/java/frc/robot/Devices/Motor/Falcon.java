@@ -36,6 +36,7 @@ public class Falcon extends AnyMotor {
         currentConfig.SupplyCurrentLimitEnable = true;
         currentConfig.SupplyCurrentLimit = amps;
         config.apply(currentConfig);
+
     }
 
     public void setBrakeMode(boolean enabled) {
@@ -67,8 +68,11 @@ public class Falcon extends AnyMotor {
         this.falcon = new TalonFX(deviceNumber, bus);
 
         falcon.setInverted(false);
+
+        setCurrentLimit(40);
+        resetEncoder();
     }
-    
+
     /**
      * Overloaded constructor for the Falcon motor controller without stallable
      * parameter.

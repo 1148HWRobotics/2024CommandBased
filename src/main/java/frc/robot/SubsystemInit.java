@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Auto.FieldPositioning;
 import frc.robot.Auto.Position;
 import frc.robot.Components.Carriage;
-import frc.robot.Components.Climb;
 import frc.robot.Components.Elevator;
 import frc.robot.Components.Shooter;
 import frc.robot.Devices.AbsoluteEncoder;
@@ -26,7 +25,7 @@ import frc.robot.Util.Vector2;
 
 public class SubsystemInit {
     static Boolean isRed() {
-        boolean isRed = true;
+        boolean isRed = false;
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent()) {
             isRed = alliance.get() == DriverStation.Alliance.Red ? true : false;
@@ -101,23 +100,14 @@ public class SubsystemInit {
 
     }
 
-    static Climb climb() {
-        Falcon leftGrippy = new Falcon(19, false).withMaxVoltage(7);
-        Falcon rightGrippy = new Falcon(20, true).withMaxVoltage(7);
-        var climber = new Climb(leftGrippy, rightGrippy, new PDConstant(0.01, 0));
-        return climber;
-    }
-
     static Elevator elevator() {
         BinarySensor elevatorDownSensor = new BinarySensor(0);
-        Falcon f1 = new Falcon(9, false).withMaxVoltage(11);
-        f1.setCurrentLimit(100);
-        Falcon f2 = new Falcon(13, true).withMaxVoltage(11);
-        f2.setCurrentLimit(100);
+        Falcon f1 = new Falcon(9, false).withMaxVoltage(12);
+        Falcon f2 = new Falcon(13, true).withMaxVoltage(12);
         var elevator = new Elevator(
                 f1, // left
                 f2, // right
-                new PIDController(new PIDConstant(0.1, 0.0, 0.0)),
+                new PIDController(new PIDConstant(0.13, 0.0, 0.0)),
                 elevatorDownSensor);
         return elevator;
     }
@@ -141,7 +131,7 @@ public class SubsystemInit {
 
     static FieldPositioning fieldPositioning(PositionedDrive drive, Imu imu, LimeLight limeLight, Vector2 startPos) {
         FieldPositioning fieldPositioning = new FieldPositioning(drive, imu, limeLight,
-                new Position(isRed() ? 180 : 0, new Vector2(0, 0)));
+                new Position(isRed() ? 0 : 180, new Vector2(0, 0)));
         return fieldPositioning;
     }
 

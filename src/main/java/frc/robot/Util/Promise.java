@@ -2,6 +2,7 @@ package frc.robot.Util;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 public abstract class Promise {
     public abstract boolean isResolved();
@@ -32,11 +33,14 @@ public abstract class Promise {
 
     public static Promise timeout(double seconds) {
         SimplePromise prom = new SimplePromise();
-        CommandScheduler.getInstance().schedule(new Command() {
-            public void end(boolean interrupted) {
+
+        CommandScheduler.getInstance().schedule(Commands.waitSeconds(seconds).andThen(new Command() {
+            @Override
+            public void execute() {
                 prom.resolve();
-            };
-        }.withTimeout(seconds));
+                cancel();
+            }
+        }));
         return prom;
     }
 

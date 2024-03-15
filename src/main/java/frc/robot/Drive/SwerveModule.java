@@ -1,6 +1,5 @@
 package frc.robot.Drive;
 
-import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import frc.robot.Devices.Motor.Falcon;
 import frc.robot.Util.AngleMath;
 import frc.robot.Util.MotionController;
@@ -93,7 +92,7 @@ public class SwerveModule {
         go.resetEncoder();
     }
 
-    final double inchesPerRotation = (1/6.75) * (3.82 * Math.PI);
+    final double inchesPerRotation = (1 / 6.75) * (3.82 * Math.PI);
 
     /**
      * Gets the distance the module has traveled in inches.

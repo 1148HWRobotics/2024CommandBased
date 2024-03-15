@@ -45,6 +45,10 @@ public class Carriage extends SubsystemBase {
         startPos = null;
     }
 
+    public boolean hasNote() {
+        return startPos != null;
+    }
+
     @Override
     public void periodic() {
         if (noteSensor.justEnabled()) {

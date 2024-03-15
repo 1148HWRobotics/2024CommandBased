@@ -33,4 +33,8 @@ public class Position {
     public Position scale(double scaleFactor) {
         return new Position(AngleMath.conformAngle(this.angle * scaleFactor), this.position.multiply(scaleFactor));
     }
+
+    public String toString() {
+        return position.toString() + ", " + angle;
+    }
 }

@@ -1,13 +1,10 @@
 package frc.robot.Auto;
 
-import java.util.Vector;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Drive.PositionedDrive;
 import frc.robot.Util.AngleMath;
-import frc.robot.Util.MotionController;
 import frc.robot.Util.PDConstant;
 import frc.robot.Util.PIDController;
 import frc.robot.Util.Promise;

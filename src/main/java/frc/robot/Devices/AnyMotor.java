@@ -1,6 +1,6 @@
 package frc.robot.Devices;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Core.Time;
 import frc.robot.Util.MathPlus;
 import frc.robot.Util.MotionController;
 
@@ -65,12 +65,6 @@ public abstract class AnyMotor extends SubsystemBase {
      */
     public AnyMotor(boolean isReversed) {
         this.isReversed = isReversed;
-
-        // resets the encoder in 1 tick, waits for motor to initialize
-        Time.timeout(() -> {
-            setCurrentLimit(40);
-            resetEncoder();
-        }, 0);
     }
 
     /**
@@ -145,7 +139,7 @@ public abstract class AnyMotor extends SubsystemBase {
      * Stops the motor by setting the voltage to zero.
      */
     public abstract void stop();
-    
+
     /**
      * Sets the voltage applied to the motor, respecting the motor direction.
      * 

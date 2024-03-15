@@ -17,6 +17,7 @@ public class FieldPositioning extends SubsystemBase implements PositioningSystem
     final double correctionTime = 0.5;
 
     boolean hasGottenLimeLightFrame = false;
+
     public boolean hasGottenLimeLightFrame() {
         return hasGottenLimeLightFrame;
     }
@@ -27,9 +28,11 @@ public class FieldPositioning extends SubsystemBase implements PositioningSystem
         this.limeLight = limeLight;
         positionHistory.add(0, startPos);
     }
-    public void setStartPosition(Position position){
+
+    public void setStartPosition(Position position) {
         positionHistory.set(0, position);
     }
+
     double lastLimelightFrameTime = Double.NEGATIVE_INFINITY;
     Position lastLimelightFrameOffset = new Position(0, new Vector2(0, 0));
     LinkedList<Position> positionHistory = new LinkedList<>();
@@ -51,8 +54,8 @@ public class FieldPositioning extends SubsystemBase implements PositioningSystem
     }
 
     public Position predictedPositionAtLastLimelightFrame() {
-        long currentTimeSinceEpoch = System.currentTimeMillis();
-        long receiveTimeSinceEpoch = limeLight.getLastReceiveTime();
+        // long currentTimeSinceEpoch = System.currentTimeMillis();
+        // long receiveTimeSinceEpoch = limeLight.getLastReceiveTime();
         double latencyImageTakenToNow = limeLight.getRobotLatency() / 1000;
 
         int predictedPositionIndex = (int) (latencyImageTakenToNow / 0.02);
@@ -70,18 +73,17 @@ public class FieldPositioning extends SubsystemBase implements PositioningSystem
         double rotationSpeed = (positionHistory.get(0).angle - positionHistory.get(1).angle) / 0.02;
         Vector2 translationSpeed = (positionHistory.get(0).position.minus(positionHistory.get(1).position))
                 .multiply(1 / 0.02).rotate(-getTurnAngle());
-                
+
         return new ChassisSpeeds(translationSpeed.x, translationSpeed.y, rotationSpeed / 180 * Math.PI);
     }
 
     public Vector2 getFieldRelativeSpeed() {
-        return positionHistory.getFirst().position.minus(positionHistory.get(1).position).multiply(1/0.02);
+        return positionHistory.getFirst().position.minus(positionHistory.get(1).position).multiply(1 / 0.02);
     }
 
     @Override
     public void periodic() {
         Position lastPosition = positionHistory.getFirst();
-
         final double currentAngle = lastPosition.angle + imu.getYawDeltaThisTick();
         positionHistory.add(0, new Position(
                 currentAngle,
