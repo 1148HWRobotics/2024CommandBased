@@ -24,7 +24,7 @@ import frc.robot.Util.PWIDController;
 import frc.robot.Util.Vector2;
 
 public class SubsystemInit {
-    static Boolean isRed() {
+    public static Boolean isRed() {
         boolean isRed = false;
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent()) {

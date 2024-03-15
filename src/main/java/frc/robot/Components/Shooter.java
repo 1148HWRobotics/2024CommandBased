@@ -17,7 +17,7 @@ public class Shooter extends SubsystemBase {
         this.left = left;
         this.right = right;
 
-        var con = new PWIDController(new PWIDConstant(0.1, 0.0, 0.005, 5));
+        var con = new PWIDController(new PWIDConstant(0.1, 0.0, 0.01, 2.5));
         left.setVelocityPD(con);
         right.setVelocityPD(con);
     }
@@ -45,16 +45,8 @@ public class Shooter extends SubsystemBase {
     public double vel = 85;
 
     public void periodic() {
-        // var angle = Math.toRadians(40);
-        // var velocity = 3 * distance / Math.cos(angle) * Math.sqrt(9.81 / (distance *
-        // Math.tan(angle) - 12));
-        // checks if velocity is NaN
-
-        // var vel = (-con.getRightY() + 1) * 150;
-
-        // this.vel = vel;
-
         if (isSpinning) {
+            System.out.println("vel: " + left.getVelocity() + " target vel: " + vel);
             right.setVelocity(vel);
             left.setVoltage(right.getVoltage());
         } else {

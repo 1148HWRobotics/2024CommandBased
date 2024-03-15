@@ -3,6 +3,7 @@ package frc.robot.Auto;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.SubsystemInit;
 import frc.robot.Drive.PositionedDrive;
 import frc.robot.Util.AngleMath;
 import frc.robot.Util.PDConstant;
@@ -13,7 +14,7 @@ import frc.robot.Util.Vector2;
 
 public class AutoDrive extends SubsystemBase {
     FieldPositioning positioning;
-    public Position targetPos;
+    Position targetPos;
     PositionedDrive drive;
 
     PIDController xCon;
@@ -31,15 +32,25 @@ public class AutoDrive extends SubsystemBase {
         this.turnCon = new PIDController(turnCon);
     }
 
-    public double getPositionalError() {
-        return positioning.getPosition().minus(targetPos.position).getMagnitude();
-    }
+    // these core methods use reversing
 
     public void pointTo(Vector2 position) {
-        setAngleTar(position.minus(positioning.getPosition()).getAngleDeg());
+        if (!SubsystemInit.isRed())
+            position.x *= -1;
+        targetPos.angle = position.minus(positioning.getPosition()).getAngleDeg();
+    }
+
+    public void setAngleTar(double tar) {
+        if (SubsystemInit.isRed())
+            targetPos.angle = tar;
+        else
+            targetPos.angle = 180 - tar;
     }
 
     public Promise moveTo(Vector2 position) {
+        if (!SubsystemInit.isRed())
+            position.x *= -1;
+
         var prom = new SimplePromise();
         var autoDrive = this;
         targetPos.position = position;
@@ -55,8 +66,10 @@ public class AutoDrive extends SubsystemBase {
         return prom;
     }
 
-    public void setAngleTar(double tar) {
-        targetPos.angle = tar;
+    // --
+
+    public double getPositionalError() {
+        return positioning.getPosition().minus(targetPos.position).getMagnitude();
     }
 
     public Vector2 displacement;

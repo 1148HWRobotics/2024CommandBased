@@ -126,6 +126,12 @@ public class Drive extends SubsystemBase {
             for (int module = 0; module < 4; module++) {
                 final double fac = 12.0 / largestVoltage;
                 final var tar = moduleTargets[module];
+
+                // TODO : fix drive when zero voltage
+                // if (tar.getMagnitude() < 0.1) {
+                // moduleTargets[module] = moduleTargets[module].withMagnitude(0.001);
+                // continue;
+                // }
                 moduleTargets[module] = tar.withMagnitude(tar.getMagnitude() * fac);
             }
         }
