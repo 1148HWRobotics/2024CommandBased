@@ -32,23 +32,33 @@ import frc.robot.Util.ScaleInput;
 import frc.robot.Util.Vector2;
 
 public class RobotContainer {
-  public final static boolean isDriveDisabled = false;
+  public final static boolean isDriveDisabled = true;
   final static boolean shotDuringAuton = false;
 
+  // controllers
   BetterPS4 con = SubsystemInit.con();
   Joystick joystick = SubsystemInit.joystick();
+
+  // drive
   PositionedDrive drive = SubsystemInit.drive();
+
+  // positioning
+  Imu imu = SubsystemInit.imu();
   LimeLight shooterLimeLight = SubsystemInit.shooterLimelight();
   LimeLight intakeLimeLight = SubsystemInit.intakeLimelight();
-  Imu imu = SubsystemInit.imu();
+  FieldPositioning fieldPositioning = SubsystemInit.fieldPositioning(drive, imu, shooterLimeLight, new Vector2(0, 0));
+
+  // subsystems
   Shooter shooter = SubsystemInit.shooter();
   Elevator elevator = SubsystemInit.elevator();
   Falcon intake = SubsystemInit.intake();
   BinarySensor intakeSensor = SubsystemInit.intakeSensor();
   Carriage carriage = SubsystemInit.carriage(intakeSensor);
-  FieldPositioning fieldPositioning = SubsystemInit.fieldPositioning(drive, imu, shooterLimeLight, new Vector2(0, 0));
 
   public RobotContainer() {
+    // initialize auto selector
+    SmartDashboard.putStringArray("Auto List",
+        new String[] { "left", "right", "no auto", "commit arson" });
   }
 
   DeSpam dSpam = new DeSpam(0.5);
@@ -69,7 +79,7 @@ public class RobotContainer {
       boolean isShooting = false; // this is updated in `drive` and later used
       { // drive
         var targetPos = speakerPosition();
-        // .add(fieldPositioning.getFieldRelativeSpeed().multiply(0.4));
+        // .add(fieldPositioning.getFieldRelativeSpeed().multiply(0.5));
 
         final var displacementFromTar = targetPos
             .minus(fieldPositioning.getPosition());
@@ -79,7 +89,7 @@ public class RobotContainer {
 
         var pointingTar = shooter.isSpinning() && elevator.isDown() && isAutoAimOn.val;
 
-        boolean canAutoShoot = MathPlus.withinBounds(displacementFromTar.getMagnitude(), 107.0, 98.0)
+        boolean canAutoShoot = MathPlus.withinBounds(displacementFromTar.getMagnitude(), 134.0, 127.0)
             && correction < 0.2;
 
         if (elevator.isDown() && shooter.isAtVelocity() && (canAutoShoot || con.getR1Button())) {
@@ -100,16 +110,12 @@ public class RobotContainer {
               // unless we are auto aiming
               (!pointingTar) ? con.getRightX() * -11.99
                   : correction, // turn voltage
-              false);
+              false); // we don't throw an error if we tell our robot to go faster than it can
         else
           drive.power(0, 0, 0);
       }
 
       { // intake and carriage
-        dSpam.exec(() -> {
-          System.out.println(
-              "isDown" + elevator.isDown() + " inCarriage: " + intakeSensor.get());
-        });
 
         if (isShooting) {
           carriage.shoot();
@@ -167,7 +173,6 @@ public class RobotContainer {
 
       { // elevator
         if (con.getL1ButtonPressed()) {
-          System.out.println(elevator.isDown());
           if (elevator.isDown())
             elevator.moveUp();
           else
@@ -242,14 +247,14 @@ public class RobotContainer {
   Promise shoot(AutoDrive robor) {
     return Promise.immediate().then(() -> {
       robor.setAngleTar(189);
-      return robor.moveTo(new Vector2(240, 39));
+      return robor.moveTo(new Vector2(220, 39));
     })
         .then(() -> Promise.timeout(2))
         .then(() -> carriage.shoot())
         .then(() -> Promise.timeout(6));
   }
 
-  void startAuto() {
+  void startAuto(boolean startedLeft) {
 
     // dSpam.exec(() -> {
     // System.out
@@ -265,55 +270,47 @@ public class RobotContainer {
     shooter.toggleSpinning();
 
     Promise.immediate()
-        .then(() -> robor.moveTo(new Vector2(260, 33)))
-        .then(() -> shoot(robor))
-        // GET NOTE
-        .then(() -> {
-          intake.setVoltage(6);
-          var notePos = new Vector2(243, 58);
-          robor.pointTo(notePos);
-          return Promise.timeout(1)
-              .then(() -> robor.moveTo(notePos));
-        })
-        .then(() -> shoot(robor))
-        // GET NOTE 2
-        .then(() -> {
-          intake.setVoltage(6);
-          var notePos = new Vector2(243, 93);
-          robor.pointTo(notePos);
-          return Promise.timeout(1)
-              .then(() -> robor.moveTo(notePos));
-        });
+        .then(() -> robor.moveTo(new Vector2(240, 33)))
+        .then(() -> shoot(robor));
+    // GET NOTE
+    // .then(() -> {
+    // intake.setVoltage(6);
+    // var notePos = new Vector2(223, 58);
+    // robor.pointTo(notePos);
+    // return Promise.timeout(1)
+    // .then(() -> robor.moveTo(notePos));
+    // })
+    // .then(() -> shoot(robor))
+    // // GET NOTE 2
+    // .then(() -> {
+    // intake.setVoltage(6);
+    // var notePos = new Vector2(223, 93);
+    // robor.pointTo(notePos);
+    // return Promise.timeout(1)
+    // .then(() -> robor.moveTo(notePos));
+    // });
     // .then(() -> );
   }
 
   public Command getAutonomousCommand(String autonToRun) {
+    // determine if left or right of speaker
+    boolean isLeft;
     switch (autonToRun) {
-      case "auto":
-        return new Command() {
-          @Override
-          public void initialize() {
-            drive.setAlignmentThreshold(0.2);
-            drive.power(2, 70, 0.5);
-          }
-
-          @Override
-          public void execute() {
-            if (fieldPositioning.hasGottenLimeLightFrame()) {
-              startAuto();
-              cancel();
-            }
-          }
-        };
+      case "left":
+        isLeft = true;
+        break;
+      case "right":
+        isLeft = false;
+        break;
+      // do nothing if auto is unrecognized or no auto is selected
+      default:
       case "commit arson":
         return new Command() {
-          @Override
           public void initialize() {
             drive.setAlignmentThreshold(0.2);
             drive.power(0, 0, 12);
           }
 
-          @Override
           public void execute() {
             shooter.spin();
             Time.timeout(() -> {
@@ -321,11 +318,36 @@ public class RobotContainer {
             }, 3);
           }
         };
-      default:
       case "no auto":
         return new Command() {
-
         };
     }
+
+    return new Command() {
+      @Override
+      public void initialize() {
+        drive.setAlignmentThreshold(0.2);
+        // if we are on the left or right side of the speaker,
+        // we want to turn the camera towards it
+        if (isLeft)
+          drive.power(2, 70, 0.5);
+        else
+          drive.power(2, 180 - 70, -0.5);
+      }
+
+      @Override
+      public void execute() {
+        if (fieldPositioning.hasGottenLimeLightFrame()) {
+          startAuto(isLeft);
+          cancel();
+        }
+      }
+
+      @Override
+      public void end(boolean interrupted) {
+        if (shooter.isSpinning())
+          shooter.toggleSpinning();
+      }
+    };
   }
 }

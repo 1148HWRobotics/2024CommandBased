@@ -135,6 +135,8 @@ public class SubsystemInit {
         return fieldPositioning;
     }
 
+    // input
+
     static BetterPS4 con() {
         BetterPS4 con = new BetterPS4(0);
         return con;

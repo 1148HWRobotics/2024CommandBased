@@ -69,7 +69,6 @@ public class Drive extends SubsystemBase {
     public void fromChassisSpeeds(ChassisSpeeds speeds) {
         var translationVel = new Vector2(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
         var rotationVel = speeds.omegaRadiansPerSecond / Math.PI * 180;
-        System.out.println(translationVel.getMagnitude());
         power(translationVel.getMagnitude(), translationVel.getAngleDeg(), rotationVel, false);
     }
 
@@ -108,11 +107,17 @@ public class Drive extends SubsystemBase {
 
         // Calculate target vectors for each module based on driving and turning
         // directions.
+
         for (int quadrant = 1; quadrant <= 4; quadrant++) {
             var turnVec = getTurnVec(quadrant).multiply(turnVoltage);
             var goVec = Vector2.fromAngleAndMag(goDirectionDeg, goSpeed);
             var vec = goVec.add(turnVec);
 
+            // prevents wheels from turning to provide like zero power
+            // if (vec.getMagnitude() < 0.1 && moduleTargets[quadrant - 1] != null) {
+            // moduleTargets[quadrant - 1] = moduleTargets[quadrant -
+            // 1].withMagnitude(0.0001);
+            // } else
             moduleTargets[quadrant - 1] = vec;
         }
 
@@ -127,11 +132,6 @@ public class Drive extends SubsystemBase {
                 final double fac = 12.0 / largestVoltage;
                 final var tar = moduleTargets[module];
 
-                // TODO : fix drive when zero voltage
-                // if (tar.getMagnitude() < 0.1) {
-                // moduleTargets[module] = moduleTargets[module].withMagnitude(0.001);
-                // continue;
-                // }
                 moduleTargets[module] = tar.withMagnitude(tar.getMagnitude() * fac);
             }
         }

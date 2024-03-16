@@ -27,8 +27,8 @@ public class Elevator extends SubsystemBase {
         left.setVelocityPD(constant.clone());
         right.setVelocityPD(constant.clone());
 
-        left.setCurrentLimit(40);
-        right.setCurrentLimit(40);
+        left.setCurrentLimit(80);
+        right.setCurrentLimit(80);
     }
 
     public boolean isDown() {
@@ -71,8 +71,8 @@ public class Elevator extends SubsystemBase {
 
     public void climbDown() {
         target = null;
-        left.setVoltage(-12);
-        right.setVoltage(-12);
+        left.setVoltage(-12.5);
+        right.setVoltage(-12.5);
     }
 
     public void stretch() {
@@ -126,9 +126,6 @@ public class Elevator extends SubsystemBase {
             if (!goingDown)
                 max *= 1.6;
             var vel = MathPlus.clampAbsVal(target - height, max) / slowFac;
-            dSpam.exec(() -> {
-                System.out.println(vel);
-            });
 
             if (!zero.get() && goingDown) {
                 left.resetEncoder();

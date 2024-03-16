@@ -14,7 +14,7 @@ import frc.robot.Util.Vector2;
 
 public class AutoDrive extends SubsystemBase {
     FieldPositioning positioning;
-    Position targetPos;
+    Position targetPos = new Position(0, new Vector2(0, 0));
     PositionedDrive drive;
 
     PIDController xCon;
@@ -24,7 +24,8 @@ public class AutoDrive extends SubsystemBase {
     public AutoDrive(FieldPositioning positioning, Position targetPos, PositionedDrive drive, PDConstant transCon,
             PDConstant turnCon) {
         this.positioning = positioning;
-        this.targetPos = targetPos;
+        moveTo(targetPos.position);
+        setAngleTar(targetPos.angle);
         this.drive = drive;
 
         this.xCon = new PIDController(transCon);
@@ -67,6 +68,14 @@ public class AutoDrive extends SubsystemBase {
     }
 
     // --
+
+    public Promise pointAndThenMoveTo(Vector2 point) {
+        final double initialTar = targetPos.angle;
+        pointTo(point);
+        final double deltaAngle = Math.abs(initialTar - targetPos.angle);
+        // we wait for the turn to complete and then move to the point
+        return Promise.timeout(deltaAngle / 180).then(() -> moveTo(point));
+    }
 
     public double getPositionalError() {
         return positioning.getPosition().minus(targetPos.position).getMagnitude();

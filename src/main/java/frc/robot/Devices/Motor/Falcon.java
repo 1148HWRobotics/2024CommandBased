@@ -35,8 +35,9 @@ public class Falcon extends AnyMotor {
 
         currentConfig.SupplyCurrentLimitEnable = true;
         currentConfig.SupplyCurrentLimit = amps;
+        currentConfig.StatorCurrentLimitEnable = true;
+        currentConfig.StatorCurrentLimit = amps;
         config.apply(currentConfig);
-
     }
 
     public void setBrakeMode(boolean enabled) {
