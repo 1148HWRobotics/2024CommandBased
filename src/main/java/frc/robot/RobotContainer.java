@@ -18,7 +18,7 @@ import frc.robot.Devices.BetterPS4;
 import frc.robot.Devices.BinarySensor;
 import frc.robot.Devices.Imu;
 import frc.robot.Devices.LimeLight;
-import frc.robot.Devices.Motor.Falcon;
+import frc.robot.Devices.Motor.TalonFX;
 import frc.robot.Drive.PositionedDrive;
 import frc.robot.Util.AngleMath;
 import frc.robot.Util.Container;
@@ -32,7 +32,7 @@ import frc.robot.Util.ScaleInput;
 import frc.robot.Util.Vector2;
 
 public class RobotContainer {
-  public final static boolean isDriveDisabled = true;
+  public final static boolean isDriveDisabled = false;
   final static boolean shotDuringAuton = false;
 
   // controllers
@@ -51,7 +51,7 @@ public class RobotContainer {
   // subsystems
   Shooter shooter = SubsystemInit.shooter();
   Elevator elevator = SubsystemInit.elevator();
-  Falcon intake = SubsystemInit.intake();
+  TalonFX intake = SubsystemInit.intake();
   BinarySensor intakeSensor = SubsystemInit.intakeSensor();
   Carriage carriage = SubsystemInit.carriage(intakeSensor);
 
@@ -89,7 +89,7 @@ public class RobotContainer {
 
         var pointingTar = shooter.isSpinning() && elevator.isDown() && isAutoAimOn.val;
 
-        boolean canAutoShoot = MathPlus.withinBounds(displacementFromTar.getMagnitude(), 134.0, 127.0)
+        boolean canAutoShoot = MathPlus.withinBounds(displacementFromTar.getMagnitude(), 141.0, 134.0)
             && correction < 0.2;
 
         if (elevator.isDown() && shooter.isAtVelocity() && (canAutoShoot || con.getR1Button())) {

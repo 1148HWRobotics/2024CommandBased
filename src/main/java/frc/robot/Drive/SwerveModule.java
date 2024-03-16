@@ -1,6 +1,6 @@
 package frc.robot.Drive;
 
-import frc.robot.Devices.Motor.Falcon;
+import frc.robot.Devices.Motor.TalonFX;
 import frc.robot.Util.AngleMath;
 import frc.robot.Util.MotionController;
 
@@ -9,8 +9,8 @@ import frc.robot.Util.MotionController;
  * Each module has two motors: one for turning and one for driving (going).
  */
 public class SwerveModule {
-    private Falcon turn; // Motor responsible for turning the module.
-    private Falcon go; // Motor responsible for driving the module forward.
+    private TalonFX turn; // Motor responsible for turning the module.
+    private TalonFX go; // Motor responsible for driving the module forward.
 
     /**
      * Constructs a SwerveModule with specified motors for turning and driving.
@@ -18,7 +18,7 @@ public class SwerveModule {
      * @param turn The motor used to turn the module.
      * @param go   The motor used to drive the module.
      */
-    public SwerveModule(Falcon turn, Falcon go, MotionController goController) {
+    public SwerveModule(TalonFX turn, TalonFX go, MotionController goController) {
         this.turn = turn;
         this.go = go;
 

@@ -12,7 +12,7 @@ import frc.robot.Devices.BetterPS4;
 import frc.robot.Devices.BinarySensor;
 import frc.robot.Devices.Imu;
 import frc.robot.Devices.LimeLight;
-import frc.robot.Devices.Motor.Falcon;
+import frc.robot.Devices.Motor.TalonFX;
 import frc.robot.Drive.PositionedDrive;
 import frc.robot.Drive.SwerveModule;
 import frc.robot.Drive.SwerveModulePD;
@@ -40,26 +40,26 @@ public class SubsystemInit {
                 new PWIDConstant(0.1, 0, 0, 0));
 
         var leftBackEncoder = new AbsoluteEncoder(22, "drive", -44.64843, false).setOffset(-90);
-        var leftBackTurn = new Falcon(2, "drive", true);
-        var leftBackGo = new Falcon(1, "drive", false);
+        var leftBackTurn = new TalonFX(2, "drive", true);
+        var leftBackGo = new TalonFX(1, "drive", false);
         var leftBackRaw = new SwerveModule(leftBackTurn, leftBackGo, moduleGoPID);
         var leftBack = new SwerveModulePD(leftBackRaw, placeholderTurnPID, leftBackEncoder);
 
         var rightBackEncoder = new AbsoluteEncoder(21, "drive", 9.93164, false).setOffset(-90);
-        var rightBackTurn = new Falcon(8, "drive", true);
-        var rightBackGo = new Falcon(7, "drive", false);
+        var rightBackTurn = new TalonFX(8, "drive", true);
+        var rightBackGo = new TalonFX(7, "drive", false);
         var rightBackRaw = new SwerveModule(rightBackTurn, rightBackGo, moduleGoPID);
         var rightBack = new SwerveModulePD(rightBackRaw, placeholderTurnPID, rightBackEncoder);
 
         var leftFrontEncoder = new AbsoluteEncoder(23, "drive", 45.96679, false).setOffset(-90);
-        var leftFrontTurn = new Falcon(4, "drive", true);
-        var leftFrontGo = new Falcon(3, "drive", false);
+        var leftFrontTurn = new TalonFX(4, "drive", true);
+        var leftFrontGo = new TalonFX(3, "drive", false);
         var leftFrontRaw = new SwerveModule(leftFrontTurn, leftFrontGo, moduleGoPID);
         var leftFront = new SwerveModulePD(leftFrontRaw, placeholderTurnPID, leftFrontEncoder);
 
         var rightFrontEncoder = new AbsoluteEncoder(24, "drive", -99.66796, false).setOffset(-90);
-        var rightFrontTurn = new Falcon(6, "drive", true);
-        var rightFrontGo = new Falcon(5, "drive", false);
+        var rightFrontTurn = new TalonFX(6, "drive", true);
+        var rightFrontGo = new TalonFX(5, "drive", false);
         var rightFrontRaw = new SwerveModule(rightFrontTurn, rightFrontGo, moduleGoPID);
         var rightFront = new SwerveModulePD(rightFrontRaw, placeholderTurnPID, rightFrontEncoder);
 
@@ -94,16 +94,16 @@ public class SubsystemInit {
 
     static Shooter shooter() {
         Shooter shooter = new Shooter(
-                new Falcon(12, false),
-                new Falcon(10, true));
+                new TalonFX(12, false),
+                new TalonFX(10, true));
         return shooter;
 
     }
 
     static Elevator elevator() {
         BinarySensor elevatorDownSensor = new BinarySensor(0);
-        Falcon f1 = new Falcon(9, false).withMaxVoltage(12);
-        Falcon f2 = new Falcon(13, true).withMaxVoltage(12);
+        TalonFX f1 = new TalonFX(9, false).withMaxVoltage(12);
+        TalonFX f2 = new TalonFX(13, true).withMaxVoltage(12);
         var elevator = new Elevator(
                 f1, // left
                 f2, // right
@@ -112,14 +112,14 @@ public class SubsystemInit {
         return elevator;
     }
 
-    static Falcon intake() {
-        var intake = new Falcon(14, false);
+    static TalonFX intake() {
+        var intake = new TalonFX(14, false);
         intake.setVelocityPD(new PIDController(new PDConstant(0.1, 0.0)));
         return intake;
     }
 
     static Carriage carriage(BinarySensor intakeSensor) {
-        var motor = new Falcon(11, true);
+        var motor = new TalonFX(11, true);
         motor.setVelocityPD(new PIDController(new PDConstant(0.1, 0.0)));
         return new Carriage(motor, intakeSensor);
     }

@@ -2,19 +2,19 @@ package frc.robot.Components;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Devices.BinarySensor;
-import frc.robot.Devices.Motor.Falcon;
+import frc.robot.Devices.Motor.TalonFX;
 import frc.robot.Util.MotionController;
 import frc.robot.Util.PDConstant;
 import frc.robot.Util.PIDController;
 
 public class Carriage extends SubsystemBase {
     Double startPos = null;
-    Falcon motor;
+    TalonFX motor;
     BinarySensor noteSensor;
     MotionController controller = new PIDController(new PDConstant(4, 0, 3.0));
     boolean prepShot = false;
 
-    public Carriage(Falcon motor, BinarySensor noteSensor) {
+    public Carriage(TalonFX motor, BinarySensor noteSensor) {
         this.motor = motor;
         this.noteSensor = noteSensor;
     }

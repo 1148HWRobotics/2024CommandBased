@@ -1,18 +1,18 @@
 package frc.robot.Components;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Devices.Motor.Falcon;
+import frc.robot.Devices.Motor.TalonFX;
 import frc.robot.Util.DeSpam;
 import frc.robot.Util.MathPlus;
 import frc.robot.Util.MotionController;
 import frc.robot.Devices.BinarySensor;
 
 public class Elevator extends SubsystemBase {
-    Falcon left;
-    Falcon right;
+    TalonFX left;
+    TalonFX right;
     BinarySensor zero;
 
-    public Elevator(Falcon left, Falcon right, MotionController constant, BinarySensor zero) {
+    public Elevator(TalonFX left, TalonFX right, MotionController constant, BinarySensor zero) {
         this.left = left;
         this.right = right;
         this.zero = zero;
@@ -71,8 +71,9 @@ public class Elevator extends SubsystemBase {
 
     public void climbDown() {
         target = null;
-        left.setVoltage(-12.5);
-        right.setVoltage(-12.5);
+        left.setVoltage(-12);
+        right.setVoltage(-12);
+        System.out.println("climbed down");
     }
 
     public void stretch() {
