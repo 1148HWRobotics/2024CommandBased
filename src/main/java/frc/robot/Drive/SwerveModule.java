@@ -1,8 +1,11 @@
 package frc.robot.Drive;
 
+import edu.wpi.first.math.util.Units;
 import frc.robot.Devices.Motor.TalonFX;
 import frc.robot.Util.AngleMath;
 import frc.robot.Util.MotionController;
+import frc.robot.Util.PIDConstant;
+import frc.robot.Util.PIDController;
 
 /**
  * Represents a swerve module, which is part of a swerve drive system.
@@ -20,7 +23,9 @@ public class SwerveModule {
      */
     public SwerveModule(TalonFX turn, TalonFX go, MotionController goController) {
         this.turn = turn;
+        this.turn.setVelocityPD(new PIDController(new PIDConstant(0.001, 0, 0)));
         this.go = go;
+        this.turn.setVelocityPD(new PIDController(new PIDConstant(0.001, 0, 0)));
 
         go.setVelocityPD(goController);
 
@@ -44,10 +49,10 @@ public class SwerveModule {
     }
 
     /**
-     * sets go motor velocity in in/sec
+     * sets go motor velocity in m/sec
      */
     public void setGoVelocity(double velocity) {
-        go.setVelocity(velocity * inchesPerRotation);
+        go.setVelocity(velocity / Units.inchesToMeters(inchesPerRotation));
     }
 
     /**

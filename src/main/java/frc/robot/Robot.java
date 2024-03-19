@@ -44,7 +44,8 @@ public class Robot extends TimedRobot {
     if (m_teleopCommand != null) {
       m_teleopCommand.cancel();
     }
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand(SmartDashboard.getString("Auto Selector", "auto"));
+    m_autonomousCommand = m_robotContainer
+        .getAutonomousCommand(SmartDashboard.getString("Auto Selector", "pathplanner"));
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();

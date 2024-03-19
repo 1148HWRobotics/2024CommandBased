@@ -10,7 +10,7 @@ import frc.robot.Devices.AnyMotor;
  * to control a Talon FX motor controller (also known as a Falcon 500).
  */
 public class TalonFX extends AnyMotor {
-    private com.ctre.phoenix6.hardware.TalonFX falcon; // The Talon FX motor controller object.
+    private com.ctre.phoenix6.hardware.TalonFX talon; // The Talon FX motor controller object.
 
     final int id; // Unique identifier for the motor controller.
 
@@ -29,22 +29,22 @@ public class TalonFX extends AnyMotor {
      * @param amps The maximum current in Amperes.
      */
     public void setCurrentLimit(int amps) {
-        var config = falcon.getConfigurator();
+        var config = talon.getConfigurator();
         var currentConfig = new CurrentLimitsConfigs();
 
         currentConfig.SupplyCurrentLimitEnable = true;
         currentConfig.SupplyCurrentLimit = amps;
         currentConfig.StatorCurrentLimitEnable = true;
-        currentConfig.StatorCurrentLimit = amps;
+        currentConfig.StatorCurrentLimit = amps * 2;
         config.apply(currentConfig);
     }
 
     public void setBrakeMode(boolean enabled) {
-        falcon.setNeutralMode(enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+        talon.setNeutralMode(enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast);
     }
 
     protected double uGetVelocity() {
-        return falcon.getVelocity().getValue();
+        return talon.getVelocity().getValue();
     }
 
     public TalonFX withMaxVoltage(double voltage) {
@@ -65,9 +65,9 @@ public class TalonFX extends AnyMotor {
 
         this.id = deviceNumber;
 
-        this.falcon = new com.ctre.phoenix6.hardware.TalonFX(deviceNumber, bus);
+        this.talon = new com.ctre.phoenix6.hardware.TalonFX(deviceNumber, bus);
 
-        falcon.setInverted(false);
+        talon.setInverted(false);
 
         setCurrentLimit(40);
         resetEncoder();
@@ -94,7 +94,7 @@ public class TalonFX extends AnyMotor {
      * @param volts The desired voltage.
      */
     protected void uSetVoltage(double volts) {
-        falcon.setVoltage(volts); // Apply the full voltage if above stall level.
+        talon.setVoltage(volts); // Apply the full voltage if above stall level.
     }
 
     /**
@@ -103,13 +103,13 @@ public class TalonFX extends AnyMotor {
      * @return The position of the encoder in revolutions.
      */
     protected double uGetRevs() {
-        return falcon.getPosition().getValue();
+        return talon.getPosition().getValue();
     }
 
     /**
      * Stops the motor immediately by cutting power.
      */
     public void stop() {
-        falcon.stopMotor();
+        talon.stopMotor();
     }
 }

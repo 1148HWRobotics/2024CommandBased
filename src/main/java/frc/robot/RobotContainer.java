@@ -4,11 +4,14 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Auto.AutoDrive;
 import frc.robot.Auto.FieldPositioning;
+import frc.robot.Auto.NotePositions;
 import frc.robot.Auto.Position;
 import frc.robot.Components.Carriage;
 import frc.robot.Components.Elevator;
@@ -58,13 +61,15 @@ public class RobotContainer {
   public RobotContainer() {
     // initialize auto selector
     SmartDashboard.putStringArray("Auto List",
-        new String[] { "left", "right", "no auto", "commit arson" });
+        new String[] { "left", "right", "no auto", "pathplanner", "commit arson" });
+    // initialize pathplanner
+    SubsystemInit.PathPlannerInit(drive, imu);
   }
 
   DeSpam dSpam = new DeSpam(0.5);
 
   static Vector2 speakerPosition() {
-    Vector2 speakerPosition = new Vector2(SubsystemInit.isRed() ? 337.87 : -337.87, 53.58);
+    Vector2 speakerPosition = new Vector2(SubsystemInit.isRed() ? 337.87 : -337.87, 60);
     return speakerPosition;
   }
 
@@ -89,7 +94,7 @@ public class RobotContainer {
 
         var pointingTar = shooter.isSpinning() && elevator.isDown() && isAutoAimOn.val;
 
-        boolean canAutoShoot = MathPlus.withinBounds(displacementFromTar.getMagnitude(), 141.0, 134.0)
+        boolean canAutoShoot = MathPlus.withinBounds(displacementFromTar.getMagnitude(), 142.0, 136.0)
             && correction < 0.2;
 
         if (elevator.isDown() && shooter.isAtVelocity() && (canAutoShoot || con.getR1Button())) {
@@ -245,9 +250,12 @@ public class RobotContainer {
   // auto
 
   Promise shoot(AutoDrive robor) {
+    if (!shooter.isSpinning())
+      shooter.toggleSpinning();
+
     return Promise.immediate().then(() -> {
-      robor.setAngleTar(189);
-      return robor.moveTo(new Vector2(220, 39));
+      robor.setAngleTar(171);
+      return robor.moveTo(new Vector2(217, 83));
     })
         .then(() -> Promise.timeout(2))
         .then(() -> carriage.shoot())
@@ -263,33 +271,23 @@ public class RobotContainer {
     // + fieldPositioning.getTurnAngle());
     // });
     AutoDrive robor = new AutoDrive(fieldPositioning,
-        new Position(180, fieldPositioning.getPosition().add(new Vector2(0, 0))), drive,
-        new PDConstant(0.3, 0),
+        new Position(180, fieldPositioning.getPosition().add(new Vector2(0, 0))),
+        drive,
+        new PDConstant(0.25, 0.02),
         new PDConstant(0.4, 0));
 
-    shooter.toggleSpinning();
+    if (!shooter.isSpinning())
+      shooter.toggleSpinning();
 
+    // !changed
     Promise.immediate()
-        .then(() -> robor.moveTo(new Vector2(240, 33)))
-        .then(() -> shoot(robor));
-    // GET NOTE
-    // .then(() -> {
-    // intake.setVoltage(6);
-    // var notePos = new Vector2(223, 58);
-    // robor.pointTo(notePos);
-    // return Promise.timeout(1)
-    // .then(() -> robor.moveTo(notePos));
-    // })
-    // .then(() -> shoot(robor))
-    // // GET NOTE 2
-    // .then(() -> {
-    // intake.setVoltage(6);
-    // var notePos = new Vector2(223, 93);
-    // robor.pointTo(notePos);
-    // return Promise.timeout(1)
-    // .then(() -> robor.moveTo(notePos));
-    // });
-    // .then(() -> );
+        // .then(() -> robor.moveTo(new Vector2(240, 33)))
+        .then(() -> shoot(robor))
+        .then(() -> {
+          carriage.intake();
+          intake.setVelocity(0.3 * 360);
+        });
+    // .then(() -> robor.pointAndThenMoveTo(NotePositions.mid1));
   }
 
   public Command getAutonomousCommand(String autonToRun) {
@@ -302,6 +300,10 @@ public class RobotContainer {
       case "right":
         isLeft = false;
         break;
+      case "pathplanner": {
+        PathPlannerAuto auto = new PathPlannerAuto("New Auto");
+        return auto;
+      }
       // do nothing if auto is unrecognized or no auto is selected
       default:
       case "commit arson":

@@ -1,29 +1,33 @@
-package frc.robot.Drive;
+package frc.robot.Auto.Drive;
 
-import edu.wpi.first.math.MathUtil;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
+
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
+import frc.robot.Drive.SwerveModulePD;
 import frc.robot.Util.AngleMath;
 import frc.robot.Util.DeSpam;
 import frc.robot.Util.PDConstant;
 import frc.robot.Util.Vector2;
 
-/**
- * Drive is a class representing the swerve drive system of a robot.
- * It manages the coordination of the swerve modules for driving and turning
- * movements.
- */
-public class Drive extends SubsystemBase {
+public class PathPlannerDrive extends SubsystemBase {
+
+    /**
+     * Drive is a class representing the swerve drive system of a robot.
+     * It manages the coordination of the swerve modules for driving and turning
+     * movements.
+     */
+
     // Swerve modules for each corner of the robot.
-    public SwerveModulePD frontLeft;
-    protected SwerveModulePD frontRight;
-    protected SwerveModulePD backLeft;
-    protected SwerveModulePD backRight;
-    protected SwerveDriveKinematics kinematics;
+    public SwerveModule frontLeft;
+    protected SwerveModule frontRight;
+    protected SwerveModule backLeft;
+    protected SwerveModule backRight;
+
     // Dimensions of the robot.
     protected double widthInches;
     protected double lengthInches;
@@ -45,6 +49,9 @@ public class Drive extends SubsystemBase {
         this.alignmentThreshold = newThreshold;
     }
 
+    SwerveModule[] modules;
+    SwerveDriveKinematics kinematics;
+
     /**
      * Constructor for Drive that sets up the swerve modules and the robot's
      * dimensions.
@@ -56,8 +63,8 @@ public class Drive extends SubsystemBase {
      * @param widthInches  The width of the robot in inches.
      * @param lengthInches The length of the robot in inches.
      */
-    public Drive(SwerveModulePD frontLeft, SwerveModulePD frontRight, SwerveModulePD backLeft,
-            SwerveModulePD backRight, double widthInches, double lengthInches) {
+    public PathPlannerDrive(SwerveModule frontLeft, SwerveModule frontRight, SwerveModule backLeft,
+            SwerveModule backRight, double widthInches, double lengthInches) {
         this.frontLeft = frontLeft;
         this.frontRight = frontRight;
         this.backLeft = backLeft;
@@ -66,26 +73,28 @@ public class Drive extends SubsystemBase {
         this.lengthInches = lengthInches;
         this.circumferenceInches = 2 * Math.PI
                 * Math.sqrt((widthInches * widthInches + lengthInches * lengthInches) / 2);
+        modules = new SwerveModule[] {
+                frontLeft, frontRight, backLeft, backRight
+        };
         this.kinematics = new SwerveDriveKinematics(
                 new Translation2d[] { new Translation2d(-0.3556, 0.3556), new Translation2d(0.3556, 0.3556),
                         new Translation2d(-0.3556, -0.3556), new Translation2d(0.3556, -0.3556) });
 
     }
 
-    Vector2[] moduleTargets; // Targets for each module for driving and turning.
+    public SwerveModulePosition[] getPositions() {
+        SwerveModulePosition[] positions = new SwerveModulePosition[modules.length];
+        for (int i = 0; i < modules.length; i++) {
+            positions[i] = modules[i].getPosition(true);
+        }
+        return positions;
+    }
 
     public void fromChassisSpeeds(ChassisSpeeds speeds) {
-        if (RobotContainer.isDriveDisabled)
-            stopGoPower();
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
-        frontLeft.setTurnTarget(MathUtil.inputModulus(states[0].angle.getDegrees(), -180, 180));
-        frontRight.setTurnTarget(MathUtil.inputModulus(states[1].angle.getDegrees(), -180, 180));
-        backLeft.setTurnTarget(MathUtil.inputModulus(states[2].angle.getDegrees(), -180, 180));
-        backRight.setTurnTarget(MathUtil.inputModulus(states[3].angle.getDegrees(), -180, 180));
-        frontLeft.setVelocity(states[0].speedMetersPerSecond);
-        frontRight.setVelocity(states[1].speedMetersPerSecond);
-        backLeft.setVelocity(states[2].speedMetersPerSecond);
-        backRight.setVelocity(states[3].speedMetersPerSecond);
+        SwerveModuleStates[] states = kinematics.toChassisSpeedChassisSpeeds(speeds);
+        for(int i = 0; i < modules.length; i++){
+            modules[i].
+        }
     }
 
     /**
@@ -94,10 +103,10 @@ public class Drive extends SubsystemBase {
      * 
      * @param goSpeed             Directional speed in in/sec.
      * @param goDirectionDeg      Angle to translate towards in degrees
-     * @param turnVoltage         deg/sec
+     * @param turnVelocity        deg/sec
      * @param errorOnLargeVoltage If true, throws an error when voltage exceeds 12V.
      */
-    public void power(double goSpeed, double goDirectionDeg, double turnVoltage, boolean errorOnLargeVoltage) {
+    public void power(double goSpeed, double goDirectionDeg, double turnVelocity, boolean errorOnLargeVoltage) {
         if (RobotContainer.isDriveDisabled)
             stopGoPower();
 
@@ -105,13 +114,13 @@ public class Drive extends SubsystemBase {
         if (errorOnLargeVoltage) {
             if (Math.abs(goSpeed) > 12)
                 throw new Error("Illegally large voltage - goVoltage");
-            if (Math.abs(turnVoltage) > 12)
+            if (Math.abs(turnVelocity) > 12)
                 throw new Error("Illegally large voltage - turnVoltage");
         }
 
         // converts angular velocity of the robot into a per module linear velocity
         // (in/sec)
-        turnVoltage = turnVoltage / 180.0 * Math.PI
+        turnVelocity = turnVelocity / 180.0 * Math.PI
                 * Math.sqrt(Math.pow(widthInches / 2, 2) + Math.pow(lengthInches / 2, 2));
 
         // Normalize the go direction angle.
@@ -123,17 +132,11 @@ public class Drive extends SubsystemBase {
 
         // Calculate target vectors for each module based on driving and turning
         // directions.
-
         for (int quadrant = 1; quadrant <= 4; quadrant++) {
-            var turnVec = getTurnVec(quadrant).multiply(turnVoltage);
+            var turnVec = getTurnVec(quadrant).multiply(turnVelocity);
             var goVec = Vector2.fromAngleAndMag(goDirectionDeg, goSpeed);
             var vec = goVec.add(turnVec);
 
-            // prevents wheels from turning to provide like zero power
-            // if (vec.getMagnitude() < 0.1 && moduleTargets[quadrant - 1] != null) {
-            // moduleTargets[quadrant - 1] = moduleTargets[quadrant -
-            // 1].withMagnitude(0.0001);
-            // } else
             moduleTargets[quadrant - 1] = vec;
         }
 
@@ -147,7 +150,6 @@ public class Drive extends SubsystemBase {
             for (int module = 0; module < 4; module++) {
                 final double fac = 12.0 / largestVoltage;
                 final var tar = moduleTargets[module];
-
                 moduleTargets[module] = tar.withMagnitude(tar.getMagnitude() * fac);
             }
         }
@@ -200,11 +202,9 @@ public class Drive extends SubsystemBase {
 
     // Updates the swerve modules each tick based on the targets set by the power
     // method.
-    public void periodic() {
+    protected void tick(double dTime) {
         if (RobotContainer.isDriveDisabled)
             stopGoPower();
-
-        final double dTime = 0.02;
 
         double error = 0;
         double total = 0;
