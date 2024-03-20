@@ -4,6 +4,12 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
+
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -79,12 +85,16 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
-    var leftFrontTurn = new TalonFX(4, "drive", true);
-    leftFrontTurn.setVoltage(0.5);
+    m_robotContainer.autoDrive.setStates(new SwerveModuleState[] { new SwerveModuleState(1.0, new Rotation2d(0)),
+        new SwerveModuleState(1.0, new Rotation2d(0)), new SwerveModuleState(1.0, new Rotation2d(0)),
+        new SwerveModuleState(1.0, new Rotation2d(0)) });
   }
 
   @Override
   public void testPeriodic() {
+    m_robotContainer.autoDrive.setStates(new SwerveModuleState[] { new SwerveModuleState(1.0, new Rotation2d(0)),
+        new SwerveModuleState(1.0, new Rotation2d(0)), new SwerveModuleState(1.0, new Rotation2d(0)),
+        new SwerveModuleState(1.0, new Rotation2d(0)) });
   }
 
   @Override

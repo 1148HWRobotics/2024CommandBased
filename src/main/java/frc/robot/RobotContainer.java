@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Auto.AutoDrive;
 import frc.robot.Auto.FieldPositioning;
 import frc.robot.Auto.NotePositions;
+import frc.robot.Auto.PathPlannerDrive;
 import frc.robot.Auto.Position;
 import frc.robot.Components.Carriage;
 import frc.robot.Components.Elevator;
@@ -50,6 +51,7 @@ public class RobotContainer {
   LimeLight shooterLimeLight = SubsystemInit.shooterLimelight();
   LimeLight intakeLimeLight = SubsystemInit.intakeLimelight();
   FieldPositioning fieldPositioning = SubsystemInit.fieldPositioning(drive, imu, shooterLimeLight, new Vector2(0, 0));
+  PathPlannerDrive autoDrive = SubsystemInit.autoDrive(imu);
 
   // subsystems
   Shooter shooter = SubsystemInit.shooter();
@@ -62,8 +64,6 @@ public class RobotContainer {
     // initialize auto selector
     SmartDashboard.putStringArray("Auto List",
         new String[] { "left", "right", "no auto", "pathplanner", "commit arson" });
-    // initialize pathplanner
-    SubsystemInit.PathPlannerInit(drive, imu);
   }
 
   DeSpam dSpam = new DeSpam(0.5);

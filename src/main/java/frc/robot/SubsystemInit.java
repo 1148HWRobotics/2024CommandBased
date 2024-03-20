@@ -2,6 +2,10 @@ package frc.robot;
 
 import java.util.Optional;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.ClosedLoopOutputType;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants.SteerFeedbackType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
@@ -16,6 +20,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Auto.AutonomousPositioning;
 import frc.robot.Auto.FieldPositioning;
+import frc.robot.Auto.PathPlannerDrive;
 import frc.robot.Auto.Position;
 import frc.robot.Components.Carriage;
 import frc.robot.Components.Elevator;
@@ -158,6 +163,38 @@ public class SubsystemInit {
     static Joystick joystick() {
         Joystick joystick = new Joystick(1);
         return joystick;
+    }
+
+    static SwerveModuleConstants configureConstants(int goID, int steerID, boolean steerMotorInverted,
+            boolean goMotorInverted, int canCoderID, double canCoderZero, double gokP, double steerKp) {
+        return new SwerveModuleConstants().withDriveMotorId(goID).withSteerMotorId(steerID)
+                .withSteerMotorInverted(steerMotorInverted)
+                .withCANcoderId(canCoderID).withCANcoderOffset(canCoderZero).withSteerMotorGearRatio(12.8)
+                .withDriveMotorGearRatio(6.75).withWheelRadius(
+                        2)
+                .withDriveMotorGains(new Slot0Configs().withKP(gokP))
+                .withSteerMotorGains(new Slot0Configs().withKP(steerKp))
+                .withFeedbackSource(SteerFeedbackType.SyncCANcoder);
+    }
+
+    static PathPlannerDrive autoDrive(Imu imu) {
+        double goKP = 1;
+        double steerKP = 1;
+        PathPlannerDrive drive = new PathPlannerDrive(
+                new com.ctre.phoenix6.mechanisms.swerve.SwerveModule(
+                        configureConstants(3, 4, true, false, 23, 45.96679, steerKP, goKP),
+                        "drive"),
+                new com.ctre.phoenix6.mechanisms.swerve.SwerveModule(
+                        configureConstants(5, 6, true, false, 24, -99.66796, steerKP, goKP),
+                        "drive"),
+                new com.ctre.phoenix6.mechanisms.swerve.SwerveModule(
+                        configureConstants(1, 2, true, false, 22, -44.64843, steerKP, goKP),
+                        "drive"),
+                new com.ctre.phoenix6.mechanisms.swerve.SwerveModule(
+                        configureConstants(7, 8, true, false, 21, 9.93164, steerKP, goKP),
+                        "drive"),
+                imu);
+        return drive;
     }
 
     static void PathPlannerInit(PositionedDrive drive, Imu imu) {
